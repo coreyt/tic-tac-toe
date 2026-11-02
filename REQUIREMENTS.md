@@ -28,6 +28,8 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 20. After each game, the game must ask whether the players want to play again.
 21. If the players choose to play again, the game must ask for the player mode again, reset the board, and have `O` start the new game.
 22. If the players decline to play again, the game must exit with a brief closing message.
+23. Each displayed board cell must have at least one blank character of padding on the left and right and one blank line of padding above and below its number or mark, within the cell boundaries.
+24. The replay prompt must indicate that yes is the default; pressing Enter without a response must start another game.
 
 ## 3. Non-functional requirements
 
@@ -43,6 +45,7 @@ The implementation is acceptable when all of the following scenarios pass:
 1. **Start and mode selection**
    - Given Python is installed, when `python tic_tac_toe.py` is run in a terminal, then the game starts without installing third-party packages.
    - Given a new game, when the board is displayed, then it has three rows and three columns showing positions 1 through 9 for empty squares.
+   - Given any board position, when the board is displayed, then its number or mark has at least one blank character on each side and one blank line above and below it within the cell boundaries.
    - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
    - Given an invalid mode is entered, when the entry is submitted, then the game displays an error and asks again.
    - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
@@ -68,6 +71,7 @@ The implementation is acceptable when all of the following scenarios pass:
 
 6. **Replay and exit**
    - Given a game has ended, when the player chooses to play again, then the game asks for the mode again, clears the board, and starts with `O`.
+   - Given a game has ended, when the replay prompt is displayed, then it indicates yes is the default; pressing Enter starts another game.
    - Given a game has ended, when the player declines to play again, then the game displays a closing message and exits.
 
 7. **Code and usability review**
