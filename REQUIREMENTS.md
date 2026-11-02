@@ -30,6 +30,9 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 22. If the players decline to play again, the game must exit with a brief closing message.
 23. Each displayed board cell must have at least one blank character of padding on the left and right and one blank line of padding above and below its number or mark, within the cell boundaries.
 24. The replay prompt must indicate that yes is the default; pressing Enter without a response must start another game.
+25. During a game, the board must remain at a fixed position in the terminal as moves are made and prompts or errors are displayed, provided the terminal is large enough to show the layout.
+26. A move journal must appear to the right of the board, separated from its right edge by five spaces. It must list valid moves in order, identifying the player and selected position, and reset for each new game.
+27. Prompts displayed during a game, including the replay prompt, must appear below the board with two blank lines between the board's bottom edge and the prompt.
 
 ## 3. Non-functional requirements
 
@@ -46,6 +49,10 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given Python is installed, when `python tic_tac_toe.py` is run in a terminal, then the game starts without installing third-party packages.
    - Given a new game, when the board is displayed, then it has three rows and three columns showing positions 1 through 9 for empty squares.
    - Given any board position, when the board is displayed, then its number or mark has at least one blank character on each side and one blank line above and below it within the cell boundaries.
+   - Given a terminal large enough for the layout, when a player makes a move or an error is displayed, then the board remains at the same terminal position.
+   - Given a game in progress, when the board is displayed, then the move journal begins five spaces to the right of the board's right edge and lists each valid move in order with its player and position; invalid moves do not appear.
+   - Given a new game after replay, when the journal is displayed, then it contains no moves from the previous game.
+   - Given a game prompt, including the replay prompt, when it is displayed, then two blank lines separate it from the bottom edge of the board.
    - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
    - Given an invalid mode is entered, when the entry is submitted, then the game displays an error and asks again.
    - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
