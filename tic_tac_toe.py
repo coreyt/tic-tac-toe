@@ -2,6 +2,8 @@
 
 import random
 import sys
+import os
+import re
 
 
 WINNING_LINES = (
@@ -11,9 +13,23 @@ WINNING_LINES = (
 )
 
 
-def display_board(board, journal=(), status="", prompt=""):
+def supports_color():
+    return sys.stdout.isatty() and os.environ.get("TERM") != "dumb" and "NO_COLOR" not in os.environ
+
+
+def color_mark(mark):
+    if supports_color() and mark in ("X", "O"):
+        return f"\033[{33 if mark == 'X' else 34}m{mark}\033[0m"
+    return mark
+
+
+def color_text(text):
+    return re.sub(r"\b[OX]\b", lambda match: color_mark(match.group()), text)
+
+
+def display_board(board, journal=(), status="", prompt="", scores=None):
     """Render the padded board, journal, status, and prompt."""
-    cells = [mark if mark else str(index + 1)
+    cells = [color_mark(mark) if mark else str(index + 1)
              for index, mark in enumerate(board)]
     border = "+---+---+---+"
     lines = [border]
@@ -21,20 +37,22 @@ def display_board(board, journal=(), status="", prompt=""):
         lines.extend(("|   |   |   |",
                       "| " + " | ".join(cells[row * 3:row * 3 + 3]) + " |",
                       "|   |   |   |", border))
-    entries = ["Move journal"] + [f"{number}. {player}: {position}"
+    entries = ["Move journal"] + [f"{number}. {color_mark(player)}: {position}"
                                   for number, (player, position) in enumerate(journal, 1)]
+    if scores is not None:
+        entries += ["", color_text(f"X Wins: {scores['X']} | O Wins: {scores['O']} | Draws: {scores['draw']}")]
     if sys.stdout.isatty():
         print("\033[H\033[2J", end="")
     for index, line in enumerate(lines):
         print(line + ("     " + entries[index] if index < len(entries) else ""))
     print("\n")
-    print(prompt, end="", flush=True)
+    print(color_text(prompt), end="", flush=True)
     if status:
         # Save the prompt cursor; put status below it without moving the board.
         if sys.stdout.isatty():
-            print("\033[s\033[2B\r\033[2K" + status + "\033[u", end="", flush=True)
+            print("\033[s\033[2B\r\033[2K" + color_text(status) + "\033[u", end="", flush=True)
         else:
-            print("\n" + status)
+            print("\n" + color_text(status))
 
 
 def has_won(board, player):
@@ -51,14 +69,23 @@ def choose_mode():
         print("Please enter 1 for one player or 2 for two players.")
 
 
-def get_human_move(board, player, journal=None, mode="2"):
+def choose_mark():
+    while True:
+        choice = input("Choose your mark (X/O): ").strip().upper()
+        if choice in ("X", "O"):
+            return choice
+        print("Please enter X or O.")
+
+
+def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores=None):
     """Prompt until the human selects an available board position."""
     error = ""
     while True:
         prompt = f"Player {player}, choose a position (1-9): "
         if journal is not None:
-            status = error or ("You are O; the computer is X." if mode == "1" else "")
-            display_board(board, journal, status, prompt)
+            computer_mark = "X" if human_mark == "O" else "O"
+            status = error or (f"You are {human_mark}; the computer is {computer_mark}." if mode == "1" else f"Player 1: {human_mark}; Player 2: {computer_mark}")
+            display_board(board, journal, status, prompt, scores)
             choice = input().strip()
         else:
             choice = input(prompt).strip()
@@ -76,11 +103,11 @@ def get_human_move(board, player, journal=None, mode="2"):
         return position
 
 
-def get_computer_move(board):
+def get_computer_move(board, human_mark="O"):
     """Block an immediate human win, or choose a random empty position."""
     position = None
     for line in WINNING_LINES:
-        if sum(board[index] == "O" for index in line) == 2:
+        if sum(board[index] == human_mark for index in line) == 2:
             empty = [index for index in line if not board[index]]
             if empty:
                 position = empty[0]
@@ -91,37 +118,42 @@ def get_computer_move(board):
     return position
 
 
-def play_game(mode):
+def play_game(mode, human_mark="O", scores=None):
     board = [""] * 9
     journal = []
     player = "O"
 
     for _ in range(9):
-        if mode == "1" and player == "X":
-            position = get_computer_move(board)
+        if mode == "1" and player != human_mark:
+            position = get_computer_move(board, human_mark)
         else:
-            position = get_human_move(board, player, journal, mode)
+            position = get_human_move(board, player, journal, mode, human_mark, scores)
 
         board[position] = player
         journal.append((player, position + 1))
         if has_won(board, player):
-            return board, journal, f"Player {player} wins!"
+            return board, journal, player
         player = "X" if player == "O" else "O"
 
-    return board, journal, "It's a draw!"
+    return board, journal, "draw"
 
 
 def main():
     print("Tic-Tac-Toe")
     print("O always goes first.")
+    scores = {"X": 0, "O": 0, "draw": 0}
     while True:
         mode = choose_mode()
+        human_mark = choose_mark()
+        other_mark = "X" if human_mark == "O" else "O"
         if mode == "1":
-            print("One-player mode: you are O and the computer is X.")
+            print(f"One-player mode: You are {human_mark}; the computer is {other_mark}.")
         else:
-            print("Two-player mode: one human player is O and the other is X.")
-        board, journal, result = play_game(mode)
-        display_board(board, journal, result, "Play again? [Y/n]: ")
+            print(f"Two-player mode: Player 1: {human_mark}; Player 2: {other_mark}.")
+        board, journal, outcome = play_game(mode, human_mark, scores)
+        scores[outcome] += 1
+        result = "It's a draw!" if outcome == "draw" else f"Player {outcome} wins!"
+        display_board(board, journal, result, "Play again? [Y/n]: ", scores)
         answer = input().strip().lower()
         if answer not in ("", "y", "yes"):
             print("Thanks for playing!")

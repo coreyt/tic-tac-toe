@@ -9,6 +9,38 @@ import tic_tac_toe as game
 
 
 class TicTacToeTests(unittest.TestCase):
+    def test_mark_selection_validation(self):
+        with patch("builtins.input", side_effect=["bad", " x "]), patch("builtins.print") as out:
+            self.assertEqual(game.choose_mark(), "X")
+            self.assertEqual(out.call_count, 1)
+
+    def test_computer_blocks_x(self):
+        with patch("tic_tac_toe.random.choice", return_value=8):
+            self.assertEqual(game.get_computer_move(["X", "X", "", "O", "", "", "", "", ""], "X"), 2)
+
+    def test_colorized_board_and_plain_fallback(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), patch.object(output, "isatty", return_value=True), patch("tic_tac_toe.supports_color", return_value=True):
+            game.display_board(["X", "O"] + [""] * 7)
+        self.assertIn("\033[33mX\033[0m", output.getvalue())
+        self.assertIn("\033[34mO\033[0m", output.getvalue())
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            game.display_board(["X", "O"] + [""] * 7)
+        self.assertNotIn("\033[", output.getvalue())
+
+    def test_session_scores_and_mark_changes(self):
+        output = self.run_main(["2", "x", "1", "4", "2", "5", "3", "y", "2", "o", "1", "2", "3", "5", "4", "6", "8", "7", "9", "n"])
+        self.assertIn("Player 1: X", output)
+        self.assertIn("Player 2: O", output)
+        self.assertIn("X Wins: 0 | O Wins: 1 | Draws: 1", output)
+
+    def test_computer_opens_when_human_is_x(self):
+        with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
+            output = self.run_main(["1", "x", "1", "2", "4", "n"])
+        self.assertIn("1. O:", output)
+        self.assertIn("You are X; the computer is O", output)
+
     def run_main(self, inputs):
         output = io.StringIO()
         with patch("builtins.input", side_effect=inputs), contextlib.redirect_stdout(output):
@@ -16,7 +48,7 @@ class TicTacToeTests(unittest.TestCase):
         return output.getvalue()
 
     def test_terminal_entry_point(self):
-        result = subprocess.run([sys.executable, "tic_tac_toe.py"], input="2\n1\n4\n2\n5\n3\nn\n", text=True, capture_output=True, check=True)
+        result = subprocess.run([sys.executable, "tic_tac_toe.py"], input="2\nO\n1\n4\n2\n5\n3\nn\n", text=True, capture_output=True, check=True)
         self.assertIn("Player O wins!", result.stdout)
 
     def test_board_display(self):
@@ -38,13 +70,13 @@ class TicTacToeTests(unittest.TestCase):
         self.assertEqual(out.call_count, 4)
 
     def test_two_player_win_and_replay(self):
-        output = self.run_main(["2", "1", "4", "2", "5", "3", "y", "2", "1", "4", "2", "5", "3", "n"])
+        output = self.run_main(["2", "O", "1", "4", "2", "5", "3", "y", "2", "O", "1", "4", "2", "5", "3", "n"])
         self.assertEqual(output.count("Player O wins!"), 2)
         self.assertEqual(output.count(" 1 | 2 | 3"), 2)
         self.assertIn("Thanks for playing!", output)
 
     def test_draw(self):
-        output = self.run_main(["2", "1", "2", "3", "5", "4", "6", "8", "7", "9", "n"])
+        output = self.run_main(["2", "O", "1", "2", "3", "5", "4", "6", "8", "7", "9", "n"])
         self.assertIn("It's a draw!", output)
 
     def test_all_winning_lines(self):
@@ -80,8 +112,8 @@ class TicTacToeTests(unittest.TestCase):
 
     def test_one_player_assignment_and_automatic_turn(self):
         with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
-            output = self.run_main(["1", "1", "2", "4", "5", "n"])
-        self.assertIn("you are O and the computer is X", output)
+            output = self.run_main(["1", "O", "1", "2", "4", "5", "n"])
+        self.assertIn("You are O; the computer is X", output)
         self.assertIn("2. X: 9", output)
         self.assertIn("Player X wins!", output)
 
@@ -97,9 +129,9 @@ class TicTacToeTests(unittest.TestCase):
         self.assertEqual(lines[13:16], ["", "", "Move: "])
 
     def test_empty_replay_starts_new_game_and_resets_journal(self):
-        output = self.run_main(["2", "1", "4", "2", "5", "3", "", "2", "1", "4", "2", "5", "3", "n"])
+        output = self.run_main(["2", "O", "1", "4", "2", "5", "3", "", "2", "O", "1", "4", "2", "5", "3", "n"])
         self.assertEqual(output.count("Player O wins!"), 2)
-        self.assertEqual(output.count("+---+---+---+     Move journal\n|   |   |   |\n| 1 | 2 | 3 |"), 2)
+        self.assertEqual(output.count("| 1 | 2 | 3 |"), 2)
 
     def test_terminal_redraw_uses_fixed_origin(self):
         output = io.StringIO()

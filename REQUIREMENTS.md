@@ -11,7 +11,7 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 3. At the start of each game session, the game must ask whether to play with one player or two players.
 4. The game must accept only `1` or `2` as valid player-mode selections and re-prompt for invalid selections.
 5. In two-player mode, both `O` and `X` must be controlled by human players.
-6. In one-player mode, the human player must control `O` and the computer must control `X`.
+6. In one-player mode, the human player must choose `X` or `O`; the computer must control the other mark.
 7. The game must clearly identify which mark is controlled by the computer.
 8. Players must use the marks `O` and `X`.
 9. Player `O` must always take the first turn.
@@ -33,6 +33,9 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 25. During a game, the board must remain at a fixed position in the terminal as moves are made and prompts or errors are displayed, provided the terminal is large enough to show the layout.
 26. A move journal must appear to the right of the board, separated from its right edge by five spaces. It must list valid moves in order, identifying the player and selected position, and reset for each new game.
 27. Prompts displayed during a game, including the replay prompt, must appear below the board with two blank lines between the board's bottom edge and the prompt.
+28. At the start of each game, the human player in one-player mode, or player 1 in two-player mode, must choose `X` or `O`. In two-player mode, player 2 receives the other mark. The game must accept either letter case, reject other choices, re-prompt, and identify each participant's mark.
+29. The game must keep in-memory counts of `X` wins, `O` wins, and draws for the current program session. It must display all three counts after each completed game and during subsequent games when players play again. Each completed game increments exactly one count; starting a new game does not reset the counts. Exiting and restarting the program resets all counts to zero.
+30. On a color-capable terminal, displayed `X` marks must be yellow and displayed `O` marks must be blue. Empty-square numbers and other text must not inherit the mark colors. When color is unavailable, the marks must remain distinguishable as text.
 
 ## 3. Non-functional requirements
 
@@ -59,11 +62,13 @@ The implementation is acceptable when all of the following scenarios pass:
 
 2. **Two-player mode**
    - Given two-player mode is selected, when a turn begins, then both `O` and `X` are prompted for human moves.
+   - Given two-player mode, when player 1 selects `X` or `O`, then player 1 receives that mark, player 2 receives the other, and both assignments are identified.
    - Given a valid move is entered, when the move is accepted, then the selected square displays that player’s mark and the turn changes.
    - Given either player mode, when a valid move is made and the game has not ended, then the next turn belongs to the other mark, alternating between `O` and `X`.
 
 3. **One-player mode**
-   - Given one-player mode is selected, when the game begins, then the human is identified as `O` and the computer as `X`.
+   - Given one-player mode, when the human selects `X` or `O`, then the human receives that mark, the computer receives the other, and both assignments are identified.
+   - Given either choice of human mark, when the game begins, then `O` moves first, including automatically when the computer is `O`.
    - Given it is the computer’s turn, when the computer moves, then it selects one of the currently empty squares automatically.
    - Given the human has two marks in a row, column, or diagonal and the third square is empty, when the computer moves, then it occupies that empty square.
    - Given the human has multiple such threats, when the computer moves, then it blocks one of them.
@@ -81,8 +86,15 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given a game has ended, when the player chooses to play again, then the game asks for the mode again, clears the board, and starts with `O`.
    - Given a game has ended, when the replay prompt is displayed, then it indicates yes is the default; pressing Enter starts another game.
    - Given a game has ended, when the player declines to play again, then the game displays a closing message and exits.
+   - Given any player mode, when a mark is selected using lowercase or uppercase `x` or `o`, then it is accepted; any other entry displays an error and repeats the selection prompt.
+   - Given completed games with wins for `X`, wins for `O`, and draws, when each game ends and a new game begins, then all three displayed totals reflect exactly those results and are retained across mode or mark changes.
+   - Given a newly started program, when the session totals are displayed, then `X` wins, `O` wins, and draws each start at zero, regardless of a previous session.
 
-7. **Code and usability review**
+7. **Mark colors**
+   - Given a color-capable terminal, when occupied squares are displayed, then every `X` is yellow and every `O` is blue, without coloring empty-square numbers or unrelated text.
+   - Given output without color support, when marks are displayed, then `X` and `O` remain readable and distinguishable without color.
+
+8. **Code and usability review**
    - When the source is reviewed, then its imports use only the Python standard library.
    - When the source is reviewed, then distinct responsibilities such as rendering, input validation, move selection, and game control are separated into functions with descriptive names.
    - When players select modes or moves, then prompts identify the permitted choices and the current player where applicable; errors identify the invalid selection and describe a valid alternative.
