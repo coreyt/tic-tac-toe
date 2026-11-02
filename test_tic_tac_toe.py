@@ -82,8 +82,31 @@ class TicTacToeTests(unittest.TestCase):
         with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
             output = self.run_main(["1", "1", "2", "4", "5", "n"])
         self.assertIn("you are O and the computer is X", output)
-        self.assertIn("Computer (X) chooses position", output)
+        self.assertIn("2. X: 9", output)
         self.assertIn("Player X wins!", output)
+
+    def test_padded_layout_journal_and_prompt(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            game.display_board(["O"] + [""] * 8, [("O", 1), ("X", 5)], prompt="Move: ")
+        lines = output.getvalue().splitlines()
+        self.assertEqual(lines[0], "+---+---+---+     Move journal")
+        self.assertEqual(lines[1], "|   |   |   |     1. O: 1")
+        self.assertEqual(lines[2], "| O | 2 | 3 |     2. X: 5")
+        self.assertEqual(lines[3], "|   |   |   |")
+        self.assertEqual(lines[13:16], ["", "", "Move: "])
+
+    def test_empty_replay_starts_new_game_and_resets_journal(self):
+        output = self.run_main(["2", "1", "4", "2", "5", "3", "", "2", "1", "4", "2", "5", "3", "n"])
+        self.assertEqual(output.count("Player O wins!"), 2)
+        self.assertEqual(output.count("+---+---+---+     Move journal\n|   |   |   |\n| 1 | 2 | 3 |"), 2)
+
+    def test_terminal_redraw_uses_fixed_origin(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), patch.object(output, "isatty", return_value=True):
+            game.display_board([""] * 9, status="Invalid move", prompt="Move: ")
+        self.assertTrue(output.getvalue().startswith("\033[H\033[2J+---+"))
+        self.assertIn("\033[s\033[2B\r\033[2KInvalid move\033[u", output.getvalue())
 
 
 if __name__ == "__main__":
