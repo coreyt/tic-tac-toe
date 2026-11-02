@@ -52,7 +52,9 @@ The implementation is acceptable when all of the following scenarios pass:
 3. **One-player mode**
    - Given one-player mode is selected, when the game begins, then the human is identified as `O` and the computer as `X`.
    - Given it is the computer’s turn, when the computer moves, then it selects one of the currently empty squares automatically.
-   - Given it is the computer’s turn, when the computer moves, then its choice is random and makes no strategic or intelligent evaluation of the board.
+   - Given the human has two marks in a row, column, or diagonal and the third square is empty, when the computer moves, then it occupies that empty square.
+   - Given the human has multiple such threats, when the computer moves, then it blocks one of them.
+   - Given the human has no such threat, when the computer moves, then it chooses randomly from the empty squares.
 
 4. **Move validation**
    - Given a human is prompted for a move, when non-numeric input or a number outside 1 through 9 is entered, then the game displays an error and asks again.
