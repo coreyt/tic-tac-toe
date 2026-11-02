@@ -41,6 +41,8 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 The implementation is acceptable when all of the following scenarios pass:
 
 1. **Start and mode selection**
+   - Given Python is installed, when `python tic_tac_toe.py` is run in a terminal, then the game starts without installing third-party packages.
+   - Given a new game, when the board is displayed, then it has three rows and three columns showing positions 1 through 9 for empty squares.
    - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
    - Given an invalid mode is entered, when the entry is submitted, then the game displays an error and asks again.
    - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
@@ -67,3 +69,8 @@ The implementation is acceptable when all of the following scenarios pass:
 6. **Replay and exit**
    - Given a game has ended, when the player chooses to play again, then the game asks for the mode again, clears the board, and starts with `O`.
    - Given a game has ended, when the player declines to play again, then the game displays a closing message and exits.
+
+7. **Code and usability review**
+   - When the source is reviewed, then its imports use only the Python standard library.
+   - When the source is reviewed, then game responsibilities are separated into small, readable functions.
+   - When players select modes or moves, then prompts identify the expected input and errors explain how to correct it.
