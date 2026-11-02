@@ -35,3 +35,33 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 2. The game must be runnable with `python tic_tac_toe.py`.
 3. The source code should be organized into small, readable functions.
 4. The game should provide clear prompts and error messages for players.
+
+## 4. Acceptance criteria
+
+The implementation is acceptable when all of the following scenarios pass:
+
+1. **Start and mode selection**
+   - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
+   - Given an invalid mode is entered, when the entry is submitted, then the game displays an error and asks again.
+   - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
+
+2. **Two-player mode**
+   - Given two-player mode is selected, when a turn begins, then both `O` and `X` are prompted for human moves.
+   - Given a valid move is entered, when the move is accepted, then the selected square displays that player’s mark and the turn changes.
+
+3. **One-player mode**
+   - Given one-player mode is selected, when the game begins, then the human is identified as `O` and the computer as `X`.
+   - Given it is the computer’s turn, when the computer moves, then it selects one of the currently empty squares automatically.
+   - Given it is the computer’s turn, when the computer moves, then its choice is random and makes no strategic or intelligent evaluation of the board.
+
+4. **Move validation**
+   - Given a human is prompted for a move, when non-numeric input or a number outside 1 through 9 is entered, then the game displays an error and asks again.
+   - Given a human is prompted for a move, when an occupied square is entered, then the game displays an error and asks again.
+
+5. **Game results**
+   - Given a player completes a row, column, or diagonal, when the move is made, then the game displays the final board and identifies that player as the winner.
+   - Given all nine squares are occupied without a winning line, when the final move is made, then the game identifies the result as a draw.
+
+6. **Replay and exit**
+   - Given a game has ended, when the player chooses to play again, then the game asks for the mode again, clears the board, and starts with `O`.
+   - Given a game has ended, when the player declines to play again, then the game displays a closing message and exits.
