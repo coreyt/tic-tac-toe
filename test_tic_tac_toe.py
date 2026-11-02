@@ -80,10 +80,10 @@ class TicTacToeTests(unittest.TestCase):
 
     def test_one_player_assignment_and_automatic_turn(self):
         with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
-            output = self.run_main(["1", "1", "2", "3", "n"])
+            output = self.run_main(["1", "1", "2", "4", "5", "n"])
         self.assertIn("you are O and the computer is X", output)
         self.assertIn("Computer (X) chooses position", output)
-        self.assertIn("Player O wins!", output)
+        self.assertIn("Player X wins!", output)
 
 
 if __name__ == "__main__":

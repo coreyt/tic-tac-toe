@@ -1,4 +1,4 @@
-"""Text-based tic-tac-toe with human and random-computer modes."""
+"""Text-based tic-tac-toe with human and computer modes."""
 
 import random
 
@@ -50,9 +50,17 @@ def get_human_move(board, player):
 
 
 def get_computer_move(board):
-    """Choose randomly from the currently available positions."""
-    position = random.choice([index for index, mark in enumerate(board)
-                              if not mark])
+    """Block an immediate human win, or choose a random empty position."""
+    position = None
+    for line in WINNING_LINES:
+        if sum(board[index] == "O" for index in line) == 2:
+            empty = [index for index in line if not board[index]]
+            if empty:
+                position = empty[0]
+                break
+    if position is None:
+        position = random.choice([index for index, mark in enumerate(board)
+                                  if not mark])
     print(f"Computer (X) chooses position {position + 1}.")
     return position
 
