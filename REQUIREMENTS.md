@@ -49,17 +49,18 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given Python is installed, when `python tic_tac_toe.py` is run in a terminal, then the game starts without installing third-party packages.
    - Given a new game, when the board is displayed, then it has three rows and three columns showing positions 1 through 9 for empty squares.
    - Given any board position, when the board is displayed, then its number or mark has at least one blank character on each side and one blank line above and below it within the cell boundaries.
-   - Given a terminal large enough for the layout, when a player makes a move or an error is displayed, then the board remains at the same terminal position.
+   - Given a terminal large enough for the layout, when a player makes a move or a prompt or error is displayed, then the board remains at the same terminal position.
    - Given a game in progress, when the board is displayed, then the move journal begins five spaces to the right of the board's right edge and lists each valid move in order with its player and position; invalid moves do not appear.
    - Given a new game after replay, when the journal is displayed, then it contains no moves from the previous game.
    - Given a game prompt, including the replay prompt, when it is displayed, then two blank lines separate it from the bottom edge of the board.
    - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
-   - Given an invalid mode is entered, when the entry is submitted, then the game displays an error and asks again.
+   - Given a mode is entered, when it is `1` or `2`, then the game accepts it; for any other entry, it displays an error and asks again.
    - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
 
 2. **Two-player mode**
    - Given two-player mode is selected, when a turn begins, then both `O` and `X` are prompted for human moves.
    - Given a valid move is entered, when the move is accepted, then the selected square displays that player’s mark and the turn changes.
+   - Given either player mode, when a valid move is made and the game has not ended, then the next turn belongs to the other mark, alternating between `O` and `X`.
 
 3. **One-player mode**
    - Given one-player mode is selected, when the game begins, then the human is identified as `O` and the computer as `X`.
@@ -83,5 +84,5 @@ The implementation is acceptable when all of the following scenarios pass:
 
 7. **Code and usability review**
    - When the source is reviewed, then its imports use only the Python standard library.
-   - When the source is reviewed, then game responsibilities are separated into small, readable functions.
-   - When players select modes or moves, then prompts identify the expected input and errors explain how to correct it.
+   - When the source is reviewed, then distinct responsibilities such as rendering, input validation, move selection, and game control are separated into functions with descriptive names.
+   - When players select modes or moves, then prompts identify the permitted choices and the current player where applicable; errors identify the invalid selection and describe a valid alternative.
