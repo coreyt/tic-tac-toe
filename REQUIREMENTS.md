@@ -16,8 +16,8 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 8. Players must use the marks `O` and `X`.
 9. Player `O` must always take the first turn.
 10. On each human turn, the game must ask the current player to select an available position from 1 through 9.
-11. On each computer turn, the game must select an unoccupied position automatically and randomly.
-12. The computer must choose randomly from the currently unoccupied positions; it must not use strategic or intelligent decision-making.
+11. On each computer turn, the game must select an unoccupied position automatically.
+12. If the human has two marks in a row, column, or diagonal with the third position empty, the computer must play in that empty position to block the immediate winning threat. If multiple threats exist, it must block one of them. If no such threat exists, the computer must choose randomly from the currently unoccupied positions.
 13. The computer must never select an occupied position.
 14. The game must reject non-numeric input and numbers outside the range 1 through 9.
 15. The game must reject positions that have already been selected.
