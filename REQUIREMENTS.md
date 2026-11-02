@@ -16,17 +16,18 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 8. Players must use the marks `O` and `X`.
 9. Player `O` must always take the first turn.
 10. On each human turn, the game must ask the current player to select an available position from 1 through 9.
-11. On each computer turn, the game must select an unoccupied position automatically.
-12. The computer must never select an occupied position.
-13. The game must reject non-numeric input and numbers outside the range 1 through 9.
-14. The game must reject positions that have already been selected.
-15. The game must alternate turns between `O` and `X` after each valid move.
-16. The game must detect a win when a player occupies three positions in a row, column, or diagonal.
-17. When a player wins, the game must display the final board and identify the winning player.
-18. If all nine positions are filled without a winner, the game must identify the result as a draw.
-19. After each game, the game must ask whether the players want to play again.
-20. If the players choose to play again, the game must ask for the player mode again, reset the board, and have `O` start the new game.
-21. If the players decline to play again, the game must exit with a brief closing message.
+11. On each computer turn, the game must select an unoccupied position automatically and randomly.
+12. The computer must choose randomly from the currently unoccupied positions; it must not use strategic or intelligent decision-making.
+13. The computer must never select an occupied position.
+14. The game must reject non-numeric input and numbers outside the range 1 through 9.
+15. The game must reject positions that have already been selected.
+16. The game must alternate turns between `O` and `X` after each valid move.
+17. The game must detect a win when a player occupies three positions in a row, column, or diagonal.
+18. When a player wins, the game must display the final board and identify the winning player.
+19. If all nine positions are filled without a winner, the game must identify the result as a draw.
+20. After each game, the game must ask whether the players want to play again.
+21. If the players choose to play again, the game must ask for the player mode again, reset the board, and have `O` start the new game.
+22. If the players decline to play again, the game must exit with a brief closing message.
 
 ## 3. Non-functional requirements
 
