@@ -144,15 +144,21 @@ def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores
         return position
 
 
-def get_computer_move(board, human_mark="O"):
-    """Block an immediate human win, or choose a random empty position."""
-    position = None
+def computer_strategy(board, human_mark):
+    """Return a strategic move, or None if no rule applies."""
+    if not board[4]:
+        return 4
     for line in WINNING_LINES:
         if sum(board[index] == human_mark for index in line) == 2:
             empty = [index for index in line if not board[index]]
             if empty:
-                position = empty[0]
-                break
+                return empty[0]
+    return None
+
+
+def get_computer_move(board, human_mark="O"):
+    """Use a strategic move when available, otherwise choose randomly."""
+    position = computer_strategy(board, human_mark)
     if position is None:
         position = random.choice([index for index, mark in enumerate(board)
                                   if not mark])
