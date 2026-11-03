@@ -2,7 +2,7 @@
 
 ## Overview
 
-The game is a terminal application implemented as one Python module. It uses a list of nine strings to represent the board and supports either two human players or one human player against a computer. The human or player 1 selects a mark for each game; the other participant receives the other mark. The computer blocks immediate human winning threats and otherwise chooses randomly.
+The game is a terminal application implemented as one Python module. It uses a list of nine strings to represent the board and supports two human players, one human against a computer, or two computers. In modes with a human, the human or player 1 selects a mark and the other participant receives the other mark. The computer blocks immediate opposing winning threats and otherwise chooses randomly.
 
 ## Board representation
 
@@ -28,9 +28,9 @@ Render `X` in yellow and `O` in blue wherever marks are displayed on a color-cap
 
 ## Participant selection and session scores
 
-After choosing the mode for each game, prompt the human or player 1 for `X` or `O`, accepting either case. Assign the other mark to the computer or player 2, respectively, and display both assignments. Select the next controller by the current mark: in one-player mode the computer plays whenever its assigned mark is current, including the opening turn when it is `O`.
+After choosing one- or two-player mode, prompt the human or player 1 for `X` or `O`, accepting either case. Assign the other mark to the computer or player 2, respectively, and display both assignments. In zero-player mode, assign both marks to computers and skip mark selection. Select the next controller by the current mark; the computer plays `O` first in zero-player mode and also opens one-player games when assigned `O`.
 
-Initialize an in-memory score record for `X` wins, `O` wins, and draws to zero once when the program starts. Each completed game returns a structured outcome (`X`, `O`, or draw); increment its corresponding count exactly once. Render all three totals after each game and throughout later games in the same session, without resetting them when the board, journal, mode, or marks change. Do not persist scores across program runs. Reserve a fixed area for the totals so they do not disturb the board, journal spacing, or prompt position.
+Initialize an in-memory score record for `X` wins, `O` wins, and draws to zero once when the program starts. Each completed game, including a computer-versus-computer game, returns a structured outcome (`X`, `O`, or draw); increment its corresponding count exactly once. Render all three totals after each game and throughout later games in the same session, without resetting them when the board, journal, mode, or marks change. Do not persist scores across program runs. Reserve a fixed area for the totals so they do not disturb the board, journal spacing, or prompt position.
 
 ## Winning logic
 
@@ -50,24 +50,24 @@ After a human win, check that player's cumulative session wins against the saved
 
 ## Computer move selection
 
-On each computer turn, inspect the winning combinations for a line containing two marks belonging to the human and one empty square. If a line matches, select its empty square to block the human's immediate win. If more than one line matches, blocking any one of them satisfies the requirement. If no line matches, select randomly from all empty squares. A blocking move takes priority even if the computer has an immediate winning move of its own.
+On each computer turn, inspect the winning combinations for a line containing two marks belonging to its opponent and one empty square. If a line matches, select its empty square to block the opponent's immediate win. If more than one line matches, blocking any one of them satisfies the requirement. If no line matches, select randomly from all empty squares. A blocking move takes priority even if the computer has an immediate winning move of its own. In zero-player mode, pass the opposite mark as the opponent on every turn.
 
 ## Program flow
 
 1. `main` prints the game introduction.
-2. `main` asks whether to play in one-player or two-player mode; invalid choices produce an explanatory error and the prompt repeats until `1` or `2` is entered.
-3. Prompt the human or player 1 for a mark, assign the other mark to the other participant, and identify both assignments.
+2. `main` displays the one-player and two-player choices; it also accepts the undisplayed `0` for computer-versus-computer mode. Invalid choices produce an explanatory error and the prompt repeats.
+3. In one- or two-player mode, prompt the human or player 1 for a mark, assign the other mark to the other participant, and identify both assignments. In zero-player mode, assign both marks to computers without prompting.
 4. `play_game` creates an empty board and sets the current player to `O`.
-5. The board is displayed. Human turns prompt for a position; the computer blocks an immediate threat if one exists, otherwise it chooses randomly from the empty positions.
+5. The board is displayed. Human turns prompt for a position; computer turns apply the strategy against the opposing mark. Redraw the board and journal after each automatic move, including computer-versus-computer turns.
 6. Invalid or occupied human selections are rejected until a valid move is entered.
 7. The move is recorded in the board and journal, the fixed layout is refreshed, and the move is checked for a win.
 8. If a player wins, record that mark as the outcome, display the final board and identify the winner. Otherwise, if the game continues, alternate from `O` to `X` or from `X` to `O`.
-9. After nine moves without a winner, record and report a draw. Update and display the session totals exactly once per completed game.
+9. After nine moves without a winner, record and report a draw. Update and display the session totals exactly once per completed game. Only a human winner can qualify for the human leaderboard; skip initials and leaderboard updates in zero-player mode.
 10. `main` asks whether to start another game. A new game asks for the mode again, resets the board, and starts with `O`. If the player declines, display a brief closing message and exit.
 
 ## Input handling
 
-Input is read as text and stripped of surrounding whitespace. A mode is accepted only when it is `1` or `2`. A human move is accepted only when it is a number from 1 through 9 and its board position is empty. When there is no immediate human winning threat, the computer selects uniformly from the currently empty positions using Python's random module. The replay prompt indicates yes is the default: an empty response, `y`, or `yes` starts another game; any other response exits the program.
+Input is read as text and stripped of surrounding whitespace. A mode is accepted only when it is `0`, `1`, or `2`, while the prompt displays only `1` and `2`. A human move is accepted only when it is a number from 1 through 9 and its board position is empty. When there is no immediate opposing winning threat, the computer selects uniformly from the currently empty positions using Python's random module. The replay prompt indicates yes is the default: an empty response, `y`, or `yes` starts another game; any other response exits the program.
 
 Mode, mark, and move prompts state the permitted choices; move prompts identify the current player. Normalize the chosen mark to uppercase and accept only `X` or `O`. Invalid entries produce an error that identifies the problem and explains the valid choices, followed by another prompt. In two-player mode, both marks use human move input; in one-player mode, the assigned human mark uses human input and the assigned computer mark moves automatically.
 
@@ -95,7 +95,7 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 1 | Overview; Constraints: Python terminal application using the standard library. |
 | Functional 2 | Board representation: nine positions shown as a 3-by-3 grid. |
 | Functional 3 | Program flow, step 2: choose mode at the start of each game. |
-| Functional 4 | Program flow, step 2; Input handling: accept `1` or `2`, explain errors and re-prompt. |
+| Functional 4 | Program flow, step 2; Input handling: accept `0`, `1`, or `2`, display only `1` and `2`, and re-prompt on errors. |
 | Functional 5 | Input handling: both marks use human input in two-player mode. |
 | Functional 6 | Participant selection and session scores; Input handling: assign the chosen mark to the human and the other to the computer. |
 | Functional 7 | Program flow, step 3: identify the computer's mark. |
@@ -126,6 +126,9 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 32 | Leaderboard: track human session wins and accept initials for qualifying scores. |
 | Functional 33 | Leaderboard: display on startup, exit, and on `l`/`L` during a move. |
 | Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling. |
+| Functional 35 / 35a | Program flow, step 2; Input handling: accept the undisplayed zero-player mode. |
+| Functional 35b | Participant selection and session scores; Computer move selection; Program flow, steps 3–5: both marks are computer-controlled, `O` starts, and each uses the opposing mark for strategy. |
+| Functional 35c | Program flow, steps 5–10; Participant selection and session scores; Leaderboard: render moves and result, update totals, offer replay, and exclude computer wins from human leaderboard updates. |
 | Non-functional 1 | Constraints: use the standard library only. |
 | Non-functional 2 | Overview; Constraints: Python terminal application without external runtime dependencies; entry point is `tic_tac_toe.py`. |
 | Non-functional 3 | Module responsibilities: separate named functions by responsibility. |
