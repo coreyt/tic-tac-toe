@@ -101,9 +101,14 @@ def choose_mode():
     """Ask whether this game has one human player or two."""
     while True:
         choice = input("Choose a mode: 1 player or 2 players (1/2): ").strip()
-        if choice in ("1", "2"):
-            return choice
-        print("Please enter 1 for one player or 2 for two players.")
+        try:
+            number = float(choice)
+        except ValueError:
+            print("Please enter 1 for one player or 2 for two players.")
+            continue
+        if number in (0, 1, 2):
+            return str(int(number))
+        return choice
 
 
 def choose_mark():
@@ -165,13 +170,16 @@ def play_game(mode, human_mark="O", scores=None, leaderboard=None):
     player = "O"
 
     for _ in range(9):
-        if mode == "1" and player != human_mark:
-            position = get_computer_move(board, human_mark)
+        if mode == "0" or (mode == "1" and player != human_mark):
+            opponent = "X" if player == "O" else "O"
+            position = get_computer_move(board, opponent)
         else:
             position = get_human_move(board, player, journal, mode, human_mark, scores, leaderboard)
 
         board[position] = player
         journal.append((player, position + 1))
+        if mode == "0":
+            display_board(board, journal, "Computer versus computer", scores=scores)
         if has_won(board, player):
             return board, journal, player
         player = "X" if player == "O" else "O"
@@ -188,12 +196,18 @@ def main():
     human_wins = {1: 0, 2: 0}
     while True:
         mode = choose_mode()
-        human_mark = choose_mark()
-        other_mark = "X" if human_mark == "O" else "O"
-        if mode == "1":
-            print(f"One-player mode: You are {human_mark}; the computer is {other_mark}.")
+        mode_name = {"0": "Computer versus computer", "1": "One-player", "2": "Two-player"}[mode]
+        if mode == "0":
+            human_mark = None
+            print(f"{mode_name}: both players are computers.")
+            display_board([""] * 9, status=mode_name, scores=scores)
         else:
-            print(f"Two-player mode: Player 1: {human_mark}; Player 2: {other_mark}.")
+            human_mark = choose_mark()
+            other_mark = "X" if human_mark == "O" else "O"
+            if mode == "1":
+                print(f"One-player mode: You are {human_mark}; the computer is {other_mark}.")
+            else:
+                print(f"Two-player mode: Player 1: {human_mark}; Player 2: {other_mark}.")
         board, journal, outcome = play_game(mode, human_mark, scores, leaderboard)
         scores[outcome] += 1
         result = "It's a draw!" if outcome == "draw" else f"Player {outcome} wins!"
