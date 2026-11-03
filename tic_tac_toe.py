@@ -12,6 +12,43 @@ WINNING_LINES = (
     (0, 4, 8), (2, 4, 6),
 )
 
+LEADERBOARD_FILE = "leaderboard.csv"
+LEADERBOARD_SLOTS = 5
+
+
+def load_leaderboard(path=LEADERBOARD_FILE):
+    try:
+        with open(path, encoding="utf-8") as file:
+            entries = []
+            for line in file:
+                initials, wins = line.rstrip("\n").split(",")
+                entries.append((initials, int(wins)))
+            return entries
+    except FileNotFoundError:
+        return []
+
+
+def save_leaderboard(entries, path=LEADERBOARD_FILE):
+    with open(path, "w", encoding="utf-8", newline="") as file:
+        for initials, wins in entries:
+            file.write(f"{initials},{wins}\n")
+
+
+def qualifies_for_leaderboard(entries, wins):
+    return len(entries) < LEADERBOARD_SLOTS - 1 or any(wins > score for _, score in entries)
+
+
+def add_leaderboard_entry(entries, initials, wins):
+    return sorted([*entries, (initials, wins)], key=lambda entry: entry[1], reverse=True)[:LEADERBOARD_SLOTS - 1]
+
+
+def display_leaderboard(entries):
+    print("\nLeaderboard")
+    if not entries:
+        print("No scores yet.")
+    for index, (initials, wins) in enumerate(entries, 1):
+        print(f"{index}. {initials}: {wins} wins")
+
 
 def supports_color():
     return sys.stdout.isatty() and os.environ.get("TERM") != "dumb" and "NO_COLOR" not in os.environ
@@ -77,11 +114,11 @@ def choose_mark():
         print("Please enter X or O.")
 
 
-def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores=None):
+def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores=None, leaderboard=None):
     """Prompt until the human selects an available board position."""
     error = ""
     while True:
-        prompt = f"Player {player}, choose a position (1-9): "
+        prompt = f"Player {player}, choose a position (1-9) or L for leaderboard: "
         if journal is not None:
             computer_mark = "X" if human_mark == "O" else "O"
             status = error or (f"You are {human_mark}; the computer is {computer_mark}." if mode == "1" else f"Player 1: {human_mark}; Player 2: {computer_mark}")
@@ -89,6 +126,10 @@ def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores
             choice = input().strip()
         else:
             choice = input(prompt).strip()
+        if choice.lower() == "l":
+            display_leaderboard(leaderboard if leaderboard is not None else [])
+            input("Press Enter to return to the game: ")
+            continue
         if choice not in tuple(str(number) for number in range(1, 10)):
             error = "Please enter a number from 1 to 9."
             if journal is None:
@@ -118,7 +159,7 @@ def get_computer_move(board, human_mark="O"):
     return position
 
 
-def play_game(mode, human_mark="O", scores=None):
+def play_game(mode, human_mark="O", scores=None, leaderboard=None):
     board = [""] * 9
     journal = []
     player = "O"
@@ -127,7 +168,7 @@ def play_game(mode, human_mark="O", scores=None):
         if mode == "1" and player != human_mark:
             position = get_computer_move(board, human_mark)
         else:
-            position = get_human_move(board, player, journal, mode, human_mark, scores)
+            position = get_human_move(board, player, journal, mode, human_mark, scores, leaderboard)
 
         board[position] = player
         journal.append((player, position + 1))
@@ -141,7 +182,10 @@ def play_game(mode, human_mark="O", scores=None):
 def main():
     print("Tic-Tac-Toe")
     print("O always goes first.")
+    leaderboard = load_leaderboard()
+    display_leaderboard(leaderboard)
     scores = {"X": 0, "O": 0, "draw": 0}
+    human_wins = {1: 0, 2: 0}
     while True:
         mode = choose_mode()
         human_mark = choose_mark()
@@ -150,12 +194,27 @@ def main():
             print(f"One-player mode: You are {human_mark}; the computer is {other_mark}.")
         else:
             print(f"Two-player mode: Player 1: {human_mark}; Player 2: {other_mark}.")
-        board, journal, outcome = play_game(mode, human_mark, scores)
+        board, journal, outcome = play_game(mode, human_mark, scores, leaderboard)
         scores[outcome] += 1
         result = "It's a draw!" if outcome == "draw" else f"Player {outcome} wins!"
+        human_winner = None
+        if outcome != "draw":
+            if outcome == human_mark:
+                human_winner = 1
+            elif mode == "2":
+                human_winner = 2
+        if human_winner is not None:
+            human_wins[human_winner] += 1
+            wins = human_wins[human_winner]
+            if qualifies_for_leaderboard(leaderboard, wins):
+                display_board(board, journal, result, f"Player {human_winner}, enter initials: ", scores)
+                initials = input()
+                leaderboard = add_leaderboard_entry(leaderboard, initials, wins)
+                save_leaderboard(leaderboard)
         display_board(board, journal, result, "Play again? [Y/n]: ", scores)
         answer = input().strip().lower()
         if answer not in ("", "y", "yes"):
+            display_leaderboard(leaderboard)
             print("Thanks for playing!")
             return
 

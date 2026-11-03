@@ -42,6 +42,12 @@ The `WINNING_LINES` constant contains the eight possible winning combinations:
 
 After every valid move, `has_won` checks whether all three indexes in any winning combination contain the current player's mark.
 
+## Leaderboard
+
+Store up to five entries as initials and win count in `leaderboard.csv`, ordered by descending score. Read and write the file with ordinary file operations and manually handled comma-separated fields; start with an empty leaderboard if the file does not exist. Keep human-player session win counts separately from mark-based session scores so that changing marks does not transfer a player's wins. Player 1 and player 2 identify the human participants in two-player mode; the single human is player 1 in one-player mode. A computer win or draw does not increase a human player's count.
+
+After a human win, check that player's cumulative session wins against the saved entries: a free slot qualifies, or a full board qualifies only if the score strictly exceeds an existing entry. Ask for initials when qualifying, insert the score, retain the top five, and save. Display the leaderboard on startup and exit, and allow `l` or `L` at a human move prompt to display it and return to the unchanged turn. Preserve the fixed board layout when returning from the leaderboard.
+
 ## Computer move selection
 
 On each computer turn, inspect the winning combinations for a line containing two marks belonging to the human and one empty square. If a line matches, select its empty square to block the human's immediate win. If more than one line matches, blocking any one of them satisfies the requirement. If no line matches, select randomly from all empty squares. A blocking move takes priority even if the computer has an immediate winning move of its own.
@@ -116,6 +122,10 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 28 | Participant selection and session scores; Input handling: prompt, validate, assign, and identify marks for each mode. |
 | Functional 29 | Participant selection and session scores; Program flow: maintain and display session totals, updating once per result. |
 | Functional 30 | Terminal layout: color marks on supported terminals and use plain text otherwise. |
+| Functional 31 | Leaderboard: maintain up to five entries ordered by human win count. |
+| Functional 32 | Leaderboard: track human session wins and accept initials for qualifying scores. |
+| Functional 33 | Leaderboard: display on startup, exit, and on `l`/`L` during a move. |
+| Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling. |
 | Non-functional 1 | Constraints: use the standard library only. |
 | Non-functional 2 | Overview; Constraints: Python terminal application without external runtime dependencies; entry point is `tic_tac_toe.py`. |
 | Non-functional 3 | Module responsibilities: separate named functions by responsibility. |

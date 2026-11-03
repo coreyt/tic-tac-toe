@@ -2,13 +2,43 @@ import contextlib
 import io
 import subprocess
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import tic_tac_toe as game
 
 
 class TicTacToeTests(unittest.TestCase):
+    def test_leaderboard_persistence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "leaderboard.csv"
+            self.assertEqual(game.load_leaderboard(path), [])
+            entries = [("ABC", 4), ("DEF", 2)]
+            game.save_leaderboard(entries, path)
+            self.assertEqual(game.load_leaderboard(path), entries)
+
+    def test_leaderboard_during_turn_preserves_board(self):
+        board = ["O"] + [""] * 8
+        output = io.StringIO()
+        with patch("builtins.input", side_effect=["L", "", "2"]), contextlib.redirect_stdout(output):
+            move = game.get_human_move(board, "X", [], leaderboard=[("ABC", 3)])
+        self.assertEqual(move, 1)
+        self.assertEqual(board, ["O"] + [""] * 8)
+        self.assertIn("ABC: 3 wins", output.getvalue())
+
+    def test_human_win_is_saved_and_shown_on_exit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "leaderboard.csv"
+            output = io.StringIO()
+            load = game.load_leaderboard
+            save = game.save_leaderboard
+            with patch("builtins.input", side_effect=["2", "O", "1", "4", "2", "5", "3", "ABC", "n"]), patch("tic_tac_toe.load_leaderboard", side_effect=lambda: load(path)), patch("tic_tac_toe.save_leaderboard", side_effect=lambda entries: save(entries, path)), contextlib.redirect_stdout(output):
+                game.main()
+            self.assertIn("ABC: 1 wins", output.getvalue())
+            self.assertEqual(path.read_text(), "ABC,1\n")
+
     def test_mark_selection_validation(self):
         with patch("builtins.input", side_effect=["bad", " x "]), patch("builtins.print") as out:
             self.assertEqual(game.choose_mark(), "X")
@@ -43,12 +73,13 @@ class TicTacToeTests(unittest.TestCase):
 
     def run_main(self, inputs):
         output = io.StringIO()
-        with patch("builtins.input", side_effect=inputs), contextlib.redirect_stdout(output):
+        with patch("builtins.input", side_effect=inputs), patch("tic_tac_toe.load_leaderboard", return_value=[]), patch("tic_tac_toe.qualifies_for_leaderboard", return_value=False), contextlib.redirect_stdout(output):
             game.main()
         return output.getvalue()
 
     def test_terminal_entry_point(self):
-        result = subprocess.run([sys.executable, "tic_tac_toe.py"], input="2\nO\n1\n4\n2\n5\n3\nn\n", text=True, capture_output=True, check=True)
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run([sys.executable, str(Path(game.__file__).resolve())], cwd=directory, input="2\nO\n1\n4\n2\n5\n3\nABC\nn\n", text=True, capture_output=True, check=True)
         self.assertIn("Player O wins!", result.stdout)
 
     def test_board_display(self):

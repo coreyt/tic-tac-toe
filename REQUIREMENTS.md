@@ -36,6 +36,10 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 28. At the start of each game, the human player in one-player mode, or player 1 in two-player mode, must choose `X` or `O`. In two-player mode, player 2 receives the other mark. The game must accept either letter case, reject other choices, re-prompt, and identify each participant's mark.
 29. The game must keep in-memory counts of `X` wins, `O` wins, and draws for the current program session. It must display all three counts after each completed game and during subsequent games when players play again. Each completed game increments exactly one count; starting a new game does not reset the counts. Exiting and restarting the program resets all counts to zero.
 30. On a color-capable terminal, displayed `X` marks must be yellow and displayed `O` marks must be blue. Empty-square numbers and other text must not inherit the mark colors. When color is unavailable, the marks must remain distinguishable as text.
+31. The game must maintain a leaderboard of up to five human-player entries ranked by number of wins against a human or computer opponent.
+32. When a human player's current-session win total exceeds a leaderboard entry, or an empty slot is available, the player must be offered the opportunity to enter initials and have the qualifying score recorded. A score tied with a full leaderboard entry does not displace it.
+33. The leaderboard must be displayed at program startup, when the player declines to play again, and when a player enters `l` or `L` at a move prompt during a game; viewing it during a game must return to the same turn without making a move.
+34. The leaderboard must persist in `leaderboard.csv` and be loaded on later program runs. The program must implement CSV reading and writing manually without a CSV library.
 
 ## 3. Non-functional requirements
 
@@ -98,3 +102,12 @@ The implementation is acceptable when all of the following scenarios pass:
    - When the source is reviewed, then its imports use only the Python standard library.
    - When the source is reviewed, then distinct responsibilities such as rendering, input validation, move selection, and game control are separated into functions with descriptive names.
    - When players select modes or moves, then prompts identify the permitted choices and the current player where applicable; errors identify the invalid selection and describe a valid alternative.
+
+9. **Leaderboard**
+   - Given fewer than five entries, when a human wins, then a qualifying player can enter initials and a score; when the board is full, a score must strictly exceed an existing score to qualify.
+   - Given five scores and a new higher qualifying score, when initials are entered, then the leaderboard retains the five highest scores in descending order; a tie does not displace an existing entry.
+   - Given a computer win or a draw, when a game ends, then no human leaderboard score is awarded for that result.
+   - Given a running session, when a human wins multiple games, then their qualifying score reflects their session win total.
+   - Given the program starts or a player declines replay, when the leaderboard is displayed, then its saved entries are shown.
+   - Given a human move prompt, when `l` or `L` is entered, then the leaderboard is displayed and the same player can resume the same turn without changing the board.
+   - Given leaderboard entries have been saved, when the program is restarted, then the same entries and scores are loaded from `leaderboard.csv` using manual CSV handling.
