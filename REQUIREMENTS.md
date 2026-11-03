@@ -17,7 +17,7 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 9. Player `O` must always take the first turn.
 10. On each human turn, the game must ask the current player to select an available position from 1 through 9.
 11. On each computer turn, the game must select an unoccupied position automatically.
-12. If the human has two marks in a row, column, or diagonal with the third position empty, the computer must play in that empty position to block the immediate winning threat. If multiple threats exist, it must block one of them. If no such threat exists, the computer must choose randomly from the currently unoccupied positions.
+12. The computer must select moves according to the ordered rules and tie-breaking behavior in `spec-computer-strategy.txt`: first take the center if empty, otherwise block the first immediate human threat, otherwise choose randomly from empty positions.
 13. The computer must never select an occupied position.
 14. The game must reject non-numeric input and numbers outside the range 1 through 9.
 15. The game must reject positions that have already been selected.
@@ -74,9 +74,10 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given one-player mode, when the human selects `X` or `O`, then the human receives that mark, the computer receives the other, and both assignments are identified.
    - Given either choice of human mark, when the game begins, then `O` moves first, including automatically when the computer is `O`.
    - Given it is the computer’s turn, when the computer moves, then it selects one of the currently empty squares automatically.
-   - Given the human has two marks in a row, column, or diagonal and the third square is empty, when the computer moves, then it occupies that empty square.
-   - Given the human has multiple such threats, when the computer moves, then it blocks one of them.
-   - Given the human has no such threat, when the computer moves, then it chooses randomly from the empty squares.
+   - Given the center is empty, when the computer moves, then it selects the center, even if the human has an immediate winning threat.
+   - Given the center is occupied and the human has two marks in a row, column, or diagonal with the third square empty, when the computer moves, then it occupies that empty square.
+   - Given the center is occupied and the human has multiple such threats, when the computer moves, then it blocks the first matching line in the order specified in `spec-computer-strategy.txt`.
+   - Given the center is occupied and the human has no such threat, when the computer moves, then it chooses uniformly at random from the empty squares.
 
 4. **Move validation**
    - Given a human is prompted for a move, when non-numeric input or a number outside 1 through 9 is entered, then the game displays an error and asks again.
