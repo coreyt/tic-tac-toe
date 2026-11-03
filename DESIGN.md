@@ -52,7 +52,9 @@ After a human win, check that player's cumulative session wins against the saved
 
 On each computer turn, first select index 4 if the center is empty, even if the human has an immediate winning threat. Otherwise, inspect `WINNING_LINES` in its existing order for a line containing two marks belonging to the human and one empty square; select the empty square of the first matching line. Blocking takes priority over the computer's own winning moves. If no line matches, select uniformly at random from all empty squares. The full ordered behavior and test descriptions are in `spec-computer-strategy.txt`.
 
-The `computer_strategy` function applies the center and blocking rules in that order and returns a board index, or `None` when neither applies. `get_computer_move` calls it and uses uniform random selection from empty positions only when it returns `None`.
+The `computer_strategy` function applies the center and blocking rules in that order and returns a position and reason, or `None` when neither applies. `get_computer_move` calls it and uses uniform random selection from empty positions only when it returns `None`.
+
+Each deterministic strategy result carries its selection reason (`center` or `block`) with the position; when no rule applies, `get_computer_move` chooses a random position and returns it with reason `random`. The game loop unpacks the position and reason, records both for computer moves, and continues to record human moves without a reason. The journal renderer accepts both entry forms and displays the reason next to each computer move, leaving board position indexing unchanged.
 
 ## Program flow
 
@@ -128,6 +130,7 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 32 | Leaderboard: track human session wins and accept initials for qualifying scores. |
 | Functional 33 | Leaderboard: display on startup, exit, and on `l`/`L` during a move. |
 | Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling. |
+| Functional 35 | Computer move selection; Terminal layout: return and display the selection reason for each computer move in the journal. |
 | Non-functional 1 | Constraints: use the standard library only. |
 | Non-functional 2 | Overview; Constraints: Python terminal application without external runtime dependencies; entry point is `tic_tac_toe.py`. |
 | Non-functional 3 | Module responsibilities: separate named functions by responsibility. |

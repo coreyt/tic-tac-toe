@@ -11,24 +11,37 @@ import tic_tac_toe as game
 
 
 class TicTacToeTests(unittest.TestCase):
+    def test_computer_move_reasons(self):
+        self.assertEqual(game.get_computer_move([""] * 9), (4, "center"))
+        self.assertEqual(game.get_computer_move(["O", "O", "", "", "X", "", "", "", ""]), (2, "block"))
+        with patch("tic_tac_toe.random.choice", return_value=3):
+            self.assertEqual(game.get_computer_move(["O", "X", "", "", "X", "", "", "", ""]), (3, "random"))
+
+    def test_journal_shows_computer_reason_only(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            game.display_board([""] * 9, [("O", 1), ("X", 5, "center")])
+        self.assertIn("1. O: 1", output.getvalue())
+        self.assertIn("2. X: 5 (center)", output.getvalue())
+
     def test_center_precedes_block(self):
         for board in ([""] * 9, ["O", "O", "", "X", "", "", "", "", ""]):
             with self.subTest(board=board), patch("tic_tac_toe.random.choice") as random_choice:
-                self.assertEqual(game.get_computer_move(board), 4)
+                self.assertEqual(game.get_computer_move(board), (4, "center"))
                 random_choice.assert_not_called()
 
     def test_block_precedes_computer_win(self):
         board = ["O", "O", "", "X", "X", "", "", "", ""]
-        self.assertEqual(game.get_computer_move(board, "O"), 2)
+        self.assertEqual(game.get_computer_move(board, "O"), (2, "block"))
 
     def test_block_tie_follows_line_order(self):
         board = ["O", "O", "", "O", "X", "", "", "", "X"]
-        self.assertEqual(game.get_computer_move(board), 2)
+        self.assertEqual(game.get_computer_move(board), (2, "block"))
 
     def test_blocked_line_is_not_a_threat(self):
         board = ["O", "O", "X", "", "X", "", "", "", ""]
         with patch("tic_tac_toe.random.choice", return_value=3) as choice:
-            self.assertEqual(game.get_computer_move(board), 3)
+            self.assertEqual(game.get_computer_move(board), (3, "random"))
         self.assertEqual(choice.call_args.args[0], [3, 5, 6, 7, 8])
 
     def test_leaderboard_persistence(self):
@@ -66,7 +79,7 @@ class TicTacToeTests(unittest.TestCase):
 
     def test_computer_blocks_x(self):
         with patch("tic_tac_toe.random.choice", return_value=8):
-            self.assertEqual(game.get_computer_move(["X", "X", "", "O", "O", "", "", "", ""], "X"), 2)
+            self.assertEqual(game.get_computer_move(["X", "X", "", "O", "O", "", "", "", ""], "X"), (2, "block"))
 
     def test_colorized_board_and_plain_fallback(self):
         output = io.StringIO()
@@ -153,24 +166,25 @@ class TicTacToeTests(unittest.TestCase):
                     if not board[4]:
                         board[4] = "X" if human == "O" else "O"
                     with self.subTest(line=line, missing=missing, human=human), patch("tic_tac_toe.random.choice", side_effect=lambda choices: next((x for x in choices if x != missing), choices[0])):
-                        self.assertEqual(game.get_computer_move(board, human), missing)
+                        self.assertEqual(game.get_computer_move(board, human), (missing, "block"))
 
     def test_multiple_threats(self):
         board = ["O", "O", "", "O", "X", "", "", "", "X"]
         with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
-            self.assertIn(game.get_computer_move(board), (2, 6))
+            self.assertIn(game.get_computer_move(board), ((2, "block"), (6, "block")))
 
     def test_computer_chooses_available_square_when_no_threat(self):
         board = ["O", "X", "", "", "X", "", "", "", ""]
         with patch("tic_tac_toe.random.choice", return_value=5) as choice:
-            self.assertEqual(game.get_computer_move(board), 5)
+            self.assertEqual(game.get_computer_move(board), (5, "random"))
         self.assertEqual(choice.call_args.args[0], [2, 3, 5, 6, 7, 8])
 
     def test_one_player_assignment_and_automatic_turn(self):
         with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[-1]):
             output = self.run_main(["1", "O", "1", "2", "4", "n"])
         self.assertIn("You are O; the computer is X", output)
-        self.assertIn("2. X: 5", output)
+        self.assertIn("2. X: 5 (center)", output)
+        self.assertIn("4. X: 3 (block)", output)
         self.assertIn("Player X wins!", output)
 
     def test_padded_layout_journal_and_prompt(self):

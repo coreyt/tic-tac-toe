@@ -40,6 +40,7 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 32. When a human player's current-session win total exceeds a leaderboard entry, or an empty slot is available, the player must be offered the opportunity to enter initials and have the qualifying score recorded. A score tied with a full leaderboard entry does not displace it.
 33. The leaderboard must be displayed at program startup, when the player declines to play again, and when a player enters `l` or `L` at a move prompt during a game; viewing it during a game must return to the same turn without making a move.
 34. The leaderboard must persist in `leaderboard.csv` and be loaded on later program runs. The program must implement CSV reading and writing manually without a CSV library.
+35. Each computer move must be accompanied by its selection reason (`center`, `block`, or `random`), and the move journal must display that reason alongside the computer's mark and position. Human moves must remain identifiable without a computer-selection reason.
 
 ## 3. Non-functional requirements
 
@@ -112,3 +113,7 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given the program starts or a player declines replay, when the leaderboard is displayed, then its saved entries are shown.
    - Given a human move prompt, when `l` or `L` is entered, then the leaderboard is displayed and the same player can resume the same turn without changing the board.
    - Given leaderboard entries have been saved, when the program is restarted, then the same entries and scores are loaded from `leaderboard.csv` using manual CSV handling.
+
+10. **Computer move explanations**
+   - Given a computer selects the center, blocks an opponent, or chooses randomly, when the move is returned and displayed, then its reason is respectively `center`, `block`, or `random` and appears alongside that move in the journal.
+   - Given a human move, when the journal displays it, then it has no computer-selection reason.
