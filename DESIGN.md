@@ -2,7 +2,7 @@
 
 ## Overview
 
-The game is a terminal application implemented as one Python module. It uses a list of nine strings to represent the board and supports either two human players or one human player against a computer. The human or player 1 selects a mark for each game; the other participant receives the other mark. The computer blocks immediate human winning threats and otherwise chooses randomly.
+The game is a terminal application implemented as one Python module. It uses a list of nine strings to represent the board and supports either two human players or one human player against a computer. The human or player 1 selects a mark for each game; the other participant receives the other mark. The computer follows the ordered rules in `spec-computer-strategy.txt`.
 
 ## Board representation
 
@@ -50,7 +50,11 @@ After a human win, check that player's cumulative session wins against the saved
 
 ## Computer move selection
 
-On each computer turn, inspect the winning combinations for a line containing two marks belonging to the human and one empty square. If a line matches, select its empty square to block the human's immediate win. If more than one line matches, blocking any one of them satisfies the requirement. If no line matches, select randomly from all empty squares. A blocking move takes priority even if the computer has an immediate winning move of its own.
+On each computer turn, first select index 4 if the center is empty, even if the human has an immediate winning threat. Otherwise, inspect `WINNING_LINES` in its existing order for a line containing two marks belonging to the human and one empty square; select the empty square of the first matching line. Blocking takes priority over the computer's own winning moves. If no line matches, select uniformly at random from all empty squares. The full ordered behavior and test descriptions are in `spec-computer-strategy.txt`.
+
+The `computer_strategy` function applies the center and blocking rules in that order and returns a position and reason, or `None` when neither applies. `get_computer_move` calls it and uses uniform random selection from empty positions only when it returns `None`.
+
+Each deterministic strategy result carries its selection reason (`center` or `block`) with the position; when no rule applies, `get_computer_move` chooses a random position and returns it with reason `random`. The game loop unpacks the position and reason, records both for computer moves, and continues to record human moves without a reason. The journal renderer accepts both entry forms and displays the reason next to each computer move, leaving board position indexing unchanged.
 
 ## Program flow
 
@@ -58,7 +62,7 @@ On each computer turn, inspect the winning combinations for a line containing tw
 2. `main` asks whether to play in one-player or two-player mode; invalid choices produce an explanatory error and the prompt repeats until `1` or `2` is entered.
 3. Prompt the human or player 1 for a mark, assign the other mark to the other participant, and identify both assignments.
 4. `play_game` creates an empty board and sets the current player to `O`.
-5. The board is displayed. Human turns prompt for a position; the computer blocks an immediate threat if one exists, otherwise it chooses randomly from the empty positions.
+5. The board is displayed. Human turns prompt for a position; the computer applies the center, block, and random rules in that order.
 6. Invalid or occupied human selections are rejected until a valid move is entered.
 7. The move is recorded in the board and journal, the fixed layout is refreshed, and the move is checked for a win.
 8. If a player wins, record that mark as the outcome, display the final board and identify the winner. Otherwise, if the game continues, alternate from `O` to `X` or from `X` to `O`.
@@ -67,7 +71,7 @@ On each computer turn, inspect the winning combinations for a line containing tw
 
 ## Input handling
 
-Input is read as text and stripped of surrounding whitespace. A mode is accepted only when it is `1` or `2`. A human move is accepted only when it is a number from 1 through 9 and its board position is empty. When there is no immediate human winning threat, the computer selects uniformly from the currently empty positions using Python's random module. The replay prompt indicates yes is the default: an empty response, `y`, or `yes` starts another game; any other response exits the program.
+Input is read as text and stripped of surrounding whitespace. A mode is accepted only when it is `1` or `2`. A human move is accepted only when it is a number from 1 through 9 and its board position is empty. When the center is occupied and there is no immediate human winning threat, the computer selects uniformly from the currently empty positions using Python's random module. The replay prompt indicates yes is the default: an empty response, `y`, or `yes` starts another game; any other response exits the program.
 
 Mode, mark, and move prompts state the permitted choices; move prompts identify the current player. Normalize the chosen mark to uppercase and accept only `X` or `O`. Invalid entries produce an error that identifies the problem and explains the valid choices, followed by another prompt. In two-player mode, both marks use human move input; in one-player mode, the assigned human mark uses human input and the assigned computer mark moves automatically.
 
@@ -78,7 +82,7 @@ Mode, mark, and move prompts state the permitted choices; move prompts identify 
 - `choose_mode()`: validates the one-player or two-player selection.
 - Mark selection: validates and assigns the two marks for each game.
 - `get_human_move(board, player)`: validates a human player's move.
-- Computer move selection: uses the human's assigned mark to find a blocking square, or randomly selects an empty square if no threat exists.
+- Computer move selection: takes the empty center first, then uses the human's assigned mark to find a blocking square, or randomly selects an empty square if neither rule applies.
 - Game control: manages one complete game with the chosen mode and assignments, and returns a structured result.
 - `main()`: manages session scores, the introduction, and replay loop.
 
@@ -103,7 +107,7 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 9 | Program flow, step 4: initialize the current player to `O`. |
 | Functional 10 | Program flow, step 5; Input handling: prompt the current human for an available position. |
 | Functional 11 | Computer move selection; Input handling: select the computer move automatically from empty squares. |
-| Functional 12 | Computer move selection: block a threat, or choose randomly if none exists. |
+| Functional 12 | Computer move selection; `spec-computer-strategy.txt`: center, then block, then random, with defined tie-breaking and test descriptions. |
 | Functional 13 | Computer move selection: select only an empty square. |
 | Functional 14 | Input handling: validate the numeric range and re-prompt with an error. |
 | Functional 15 | Input handling: reject occupied squares and re-prompt with an error. |
@@ -126,6 +130,7 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 32 | Leaderboard: track human session wins and accept initials for qualifying scores. |
 | Functional 33 | Leaderboard: display on startup, exit, and on `l`/`L` during a move. |
 | Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling. |
+| Functional 35 | Computer move selection; Terminal layout: return and display the selection reason for each computer move in the journal. |
 | Non-functional 1 | Constraints: use the standard library only. |
 | Non-functional 2 | Overview; Constraints: Python terminal application without external runtime dependencies; entry point is `tic_tac_toe.py`. |
 | Non-functional 3 | Module responsibilities: separate named functions by responsibility. |

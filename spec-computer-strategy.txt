@@ -1,0 +1,29 @@
+Computer Strategy Specification
+
+On each computer turn, apply the first applicable rule below. A move must
+always select an empty square.
+
+1. Center: If the center square (position 5) is empty, select it. This rule
+   takes priority even when the human could win on the next move.
+2. Block: Otherwise, if a row, column, or diagonal contains two human marks
+   and one empty square, select that empty square. If more than one line
+   needs blocking, select the first matching line in this order: top, middle,
+   bottom rows; left, middle, right columns; top-left to bottom-right diagonal;
+   top-right to bottom-left diagonal. This rule applies even when the computer
+   has an immediate winning move.
+3. Random: Otherwise, choose uniformly at random from all empty squares.
+
+Test descriptions
+
+- Given an empty center, select position 5 whether or not an immediate human
+  winning threat exists, including when that threat is elsewhere on the board.
+- Given an occupied center and one immediate human threat in any row, column,
+  or diagonal, select its empty square. Exercise both human marks, X and O.
+- Given an occupied center and multiple immediate human threats, select the
+  empty square in the first matching line in the specified order.
+- Given an occupied center and simultaneous immediate wins for the human and
+  computer, block the human's winning square.
+- Given an occupied center and no immediate human threat, pass exactly the
+  empty squares to uniform random selection and use the selected square.
+- Given an already blocked or fully occupied line, do not treat it as an
+  immediate human threat. Never select an occupied square.

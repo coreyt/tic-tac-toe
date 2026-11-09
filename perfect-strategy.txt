@@ -1,0 +1,26 @@
+AGENTS: SHOULD NOT READ. WILL INTRODUCE ERRORS.
+
+Perfect Tic-Tac-Toe Strategy
+
+For standard 3-by-3 tic-tac-toe, apply the first applicable rule:
+
+1. Win: Complete three of your own marks in a row if possible.
+2. Block: Occupy a square where the opponent could win on their next turn.
+3. Fork: Create two distinct immediate winning threats at once.
+4. Block a fork: Prevent the opponent from creating a fork. When there are
+   multiple fork threats, a move that creates your own immediate threat may
+   force a response, but verify that the forced response does not create a
+   fork for the opponent.
+5. Center: Take the center if it is empty.
+6. Opposite corner: If the opponent occupies a corner and the diagonally
+   opposite corner is empty, take that opposite corner.
+7. Empty corner: Take an available corner.
+8. Empty side: Take an available side square.
+
+A fork creates two winning threats, so an opponent generally cannot block
+both. With perfect play from both players, the game ends in a draw. These
+rules do not guarantee a win against a perfect opponent.
+
+Sources:
+https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
+https://www.imm.dtu.dk/~tobo/bolander2020synthesizing_published.pdf

@@ -74,8 +74,11 @@ def display_board(board, journal=(), status="", prompt="", scores=None):
         lines.extend(("|   |   |   |",
                       "| " + " | ".join(cells[row * 3:row * 3 + 3]) + " |",
                       "|   |   |   |", border))
-    entries = ["Move journal"] + [f"{number}. {color_mark(player)}: {position}"
-                                  for number, (player, position) in enumerate(journal, 1)]
+    entries = ["Move journal"]
+    for number, entry in enumerate(journal, 1):
+        player, position = entry[:2]
+        reason = f" ({entry[2]})" if len(entry) > 2 else ""
+        entries.append(f"{number}. {color_mark(player)}: {position}{reason}")
     if scores is not None:
         entries += ["", color_text(f"X Wins: {scores['X']} | O Wins: {scores['O']} | Draws: {scores['draw']}")]
     if sys.stdout.isatty():
@@ -144,18 +147,24 @@ def get_human_move(board, player, journal=None, mode="2", human_mark="O", scores
         return position
 
 
-def get_computer_move(board, human_mark="O"):
-    """Block an immediate human win, or choose a random empty position."""
-    position = None
+def computer_strategy(board, human_mark):
+    """Return a strategic move, or None if no rule applies."""
+    if not board[4]:
+        return 4, "center"
     for line in WINNING_LINES:
         if sum(board[index] == human_mark for index in line) == 2:
             empty = [index for index in line if not board[index]]
             if empty:
-                position = empty[0]
-                break
+                return empty[0], "block"
+    return None
+
+
+def get_computer_move(board, human_mark="O"):
+    """Use a strategic move when available, otherwise choose randomly."""
+    position = computer_strategy(board, human_mark)
     if position is None:
-        position = random.choice([index for index, mark in enumerate(board)
-                                  if not mark])
+        position = (random.choice([index for index, mark in enumerate(board)
+                                   if not mark]), "random")
     return position
 
 
@@ -166,12 +175,13 @@ def play_game(mode, human_mark="O", scores=None, leaderboard=None):
 
     for _ in range(9):
         if mode == "1" and player != human_mark:
-            position = get_computer_move(board, human_mark)
+            position, reason = get_computer_move(board, human_mark)
         else:
             position = get_human_move(board, player, journal, mode, human_mark, scores, leaderboard)
+            reason = None
 
         board[position] = player
-        journal.append((player, position + 1))
+        journal.append((player, position + 1, reason) if reason else (player, position + 1))
         if has_won(board, player):
             return board, journal, player
         player = "X" if player == "O" else "O"
