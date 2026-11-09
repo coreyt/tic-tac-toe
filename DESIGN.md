@@ -44,7 +44,7 @@ After every valid move, `has_won` checks whether all three indexes in any winnin
 
 ## Leaderboard
 
-Store up to five entries as initials and win count in `leaderboard.csv`, ordered by descending score. Read and write the file with ordinary file operations and manually handled comma-separated fields; start with an empty leaderboard if the file does not exist. Keep human-player session win counts separately from mark-based session scores so that changing marks does not transfer a player's wins. Player 1 and player 2 identify the human participants in two-player mode; the single human is player 1 in one-player mode. A computer win or draw does not increase a human player's count.
+Store up to five entries as initials and win count in `leaderboard.csv`, ordered by descending score. Read and write the file with ordinary file operations and manually handled comma-separated fields; start with an empty leaderboard if the file does not exist. Quote initials containing a comma or quotation mark and double any embedded quotation marks; reverse that encoding when reading. Plain two-field records remain readable. Keep human-player session win counts separately from mark-based session scores so that changing marks does not transfer a player's wins. Player 1 and player 2 identify the human participants in two-player mode; the single human is player 1 in one-player mode. A computer win or draw does not increase a human player's count.
 
 After a human win, check that player's cumulative session wins against the saved entries: a free slot qualifies, or a full board qualifies only if the score strictly exceeds an existing entry. Ask for initials when qualifying, insert the score, retain the top five, and save. Display the leaderboard on startup and exit, and allow `l` or `L` at a human move prompt to display it and return to the unchanged turn. Preserve the fixed board layout when returning from the leaderboard.
 
@@ -129,7 +129,7 @@ Requirement numbers refer to the functional and non-functional lists in `REQUIRE
 | Functional 31 | Leaderboard: maintain up to five entries ordered by human win count. |
 | Functional 32 | Leaderboard: track human session wins and accept initials for qualifying scores. |
 | Functional 33 | Leaderboard: display on startup, exit, and on `l`/`L` during a move. |
-| Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling. |
+| Functional 34 | Leaderboard: load and save `leaderboard.csv` using manual file handling and CSV quoting for punctuation in initials. |
 | Functional 35 | Computer move selection; Terminal layout: return and display the selection reason for each computer move in the journal. |
 | Functional 36 / 36a | Program flow, step 2; Input handling: accept the undisplayed zero-player mode. |
 | Functional 36b | Participant selection and session scores; Computer move selection; Program flow, steps 3–5: both marks are computer-controlled, `O` starts, and each uses the opposing mark for strategy. |

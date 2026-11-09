@@ -12,6 +12,26 @@ import tic_tac_toe as game
 
 
 class TicTacToeTests(unittest.TestCase):
+    def test_invalid_numeric_modes_are_reprompted(self):
+        with patch("builtins.input", side_effect=["3", "-1", "1.5", "0"]), patch("builtins.print") as out:
+            self.assertEqual(game.choose_mode(), "0")
+        self.assertEqual(out.call_count, 3)
+
+    def test_leaderboard_uses_five_slots_and_strict_ties(self):
+        entries = [("A", 5), ("B", 4), ("C", 3), ("D", 2), ("E", 1)]
+        self.assertTrue(game.qualifies_for_leaderboard(entries[:4], 1))
+        self.assertFalse(game.qualifies_for_leaderboard(entries, 1))
+        self.assertTrue(game.qualifies_for_leaderboard(entries, 2))
+        self.assertEqual(game.add_leaderboard_entry(entries, "NEW", 3),
+                         [("A", 5), ("B", 4), ("C", 3), ("NEW", 3), ("D", 2)])
+
+    def test_leaderboard_initials_with_commas_and_quotes_round_trip(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "leaderboard.csv"
+            entries = [('A,"B"', 4), ("C,D", 2), ("ABC", 1)]
+            game.save_leaderboard(entries, path)
+            self.assertEqual(game.load_leaderboard(path), entries)
+
     def test_computer_move_reasons(self):
         self.assertEqual(game.get_computer_move([""] * 9), (4, "center"))
         self.assertEqual(game.get_computer_move(["O", "O", "", "", "X", "", "", "", ""]), (2, "block"))

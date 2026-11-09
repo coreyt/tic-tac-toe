@@ -39,7 +39,7 @@ Create a basic text-based tic-tac-toe game supporting two human players, one hum
 31. The game must maintain a leaderboard of up to five human-player entries ranked by number of wins against a human or computer opponent.
 32. When a human player's current-session win total exceeds a leaderboard entry, or an empty slot is available, the player must be offered the opportunity to enter initials and have the qualifying score recorded. A score tied with a full leaderboard entry does not displace it.
 33. The leaderboard must be displayed at program startup, when the player declines to play again, and when a player enters `l` or `L` at a move prompt during a game; viewing it during a game must return to the same turn without making a move.
-34. The leaderboard must persist in `leaderboard.csv` and be loaded on later program runs. The program must implement CSV reading and writing manually without a CSV library.
+34. The leaderboard must persist in `leaderboard.csv` and be loaded on later program runs. The program must implement CSV reading and writing manually without a CSV library, preserving initials containing commas or quotation marks.
 35. Each computer move must be accompanied by its selection reason (`center`, `block`, or `random`), and the move journal must display that reason alongside the computer's mark and position. Human moves must remain identifiable without a computer-selection reason.
 36. **Computer can play computer:** The game must support a computer-versus-computer mode.
    - 36a. Entering `0` at the player-mode prompt selects this mode, but `0` must not appear as an option in that prompt.
@@ -117,6 +117,7 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given the program starts or a player declines replay, when the leaderboard is displayed, then its saved entries are shown.
    - Given a human move prompt, when `l` or `L` is entered, then the leaderboard is displayed and the same player can resume the same turn without changing the board.
    - Given leaderboard entries have been saved, when the program is restarted, then the same entries and scores are loaded from `leaderboard.csv` using manual CSV handling.
+   - Given initials containing commas or quotation marks, when a leaderboard entry is saved and reloaded, then the initials and score are preserved without a parsing error.
 
 10. **Computer move explanations**
    - Given a computer selects the center, blocks an opponent, or chooses randomly, when the move is returned and displayed, then its reason is respectively `center`, `block`, or `random` and appears alongside that move in the journal.

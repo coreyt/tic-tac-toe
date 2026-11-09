@@ -33,6 +33,8 @@ The computer takes the center if it is empty. Otherwise, it blocks an immediate 
 
 The game keeps `X` wins, `O` wins, and draws for the current session and displays the totals as you play. The totals reset when you exit and start the program again. On supported terminals, `X` appears in yellow and `O` in blue.
 
+The leaderboard keeps up to five qualifying human scores in `leaderboard.csv` in the directory where you run the game. When your win total qualifies, enter your initials; commas and quotation marks are supported. Enter `L` at a move prompt to view the leaderboard and press Enter to return to the game.
+
 ## Run the tests
 
 ```sh

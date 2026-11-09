@@ -21,7 +21,15 @@ def load_leaderboard(path=LEADERBOARD_FILE):
         with open(path, encoding="utf-8") as file:
             entries = []
             for line in file:
-                initials, wins = line.rstrip("\n").split(",")
+                record = line.rstrip("\r\n")
+                if record.startswith('"'):
+                    match = re.fullmatch(r'"((?:[^"]|"")*)",([^,]+)', record)
+                    if match is None:
+                        raise ValueError("Invalid leaderboard record")
+                    initials, wins = match.groups()
+                    initials = initials.replace('""', '"')
+                else:
+                    initials, wins = record.split(",")
                 entries.append((initials, int(wins)))
             return entries
     except FileNotFoundError:
@@ -31,15 +39,17 @@ def load_leaderboard(path=LEADERBOARD_FILE):
 def save_leaderboard(entries, path=LEADERBOARD_FILE):
     with open(path, "w", encoding="utf-8", newline="") as file:
         for initials, wins in entries:
+            if "," in initials or '"' in initials:
+                initials = '"' + initials.replace('"', '""') + '"'
             file.write(f"{initials},{wins}\n")
 
 
 def qualifies_for_leaderboard(entries, wins):
-    return len(entries) < LEADERBOARD_SLOTS - 1 or any(wins > score for _, score in entries)
+    return len(entries) < LEADERBOARD_SLOTS or any(wins > score for _, score in entries)
 
 
 def add_leaderboard_entry(entries, initials, wins):
-    return sorted([*entries, (initials, wins)], key=lambda entry: entry[1], reverse=True)[:LEADERBOARD_SLOTS - 1]
+    return sorted([*entries, (initials, wins)], key=lambda entry: entry[1], reverse=True)[:LEADERBOARD_SLOTS]
 
 
 def display_leaderboard(entries):
@@ -104,14 +114,9 @@ def choose_mode():
     """Ask whether this game has one human player or two."""
     while True:
         choice = input("Choose a mode: 1 player or 2 players (1/2): ").strip()
-        try:
-            number = float(choice)
-        except ValueError:
-            print("Please enter 1 for one player or 2 for two players.")
-            continue
-        if number in (0, 1, 2):
-            return str(int(number))
-        return choice
+        if choice in ("0", "1", "2"):
+            return choice
+        print("Please enter 1 for one player or 2 for two players.")
 
 
 def choose_mark():
