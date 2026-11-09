@@ -29,7 +29,7 @@ If your system uses `python3` for Python 3, run `python3 tic_tac_toe.py` instead
 4. Take turns until a player gets three marks in a row, column, or diagonal. That player wins. If the board fills without a winner, the game is a draw.
 5. After the game, press Enter or enter `y` or `yes` to play again; any other response exits. You can choose the player mode again for the next game.
 
-The computer blocks an immediate winning line when you have two marks in a row with the third square empty. Otherwise, it selects an empty square randomly.
+The computer takes the center if it is empty. Otherwise, it blocks an immediate opposing winning line if possible, or selects an empty square randomly. The move journal shows the reason for each computer move.
 
 The game keeps `X` wins, `O` wins, and draws for the current session and displays the totals as you play. The totals reset when you exit and start the program again. On supported terminals, `X` appears in yellow and `O` in blue.
 

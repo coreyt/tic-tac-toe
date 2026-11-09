@@ -1,5 +1,6 @@
 import contextlib
 import io
+import re
 import subprocess
 import sys
 import tempfile
@@ -43,6 +44,34 @@ class TicTacToeTests(unittest.TestCase):
         with patch("tic_tac_toe.random.choice", return_value=3) as choice:
             self.assertEqual(game.get_computer_move(board), (3, "random"))
         self.assertEqual(choice.call_args.args[0], [3, 5, 6, 7, 8])
+    def test_hidden_zero_mode(self):
+        with patch("builtins.input", return_value="0") as prompt:
+            self.assertEqual(game.choose_mode(), "0")
+        self.assertNotIn("0", prompt.call_args.args[0])
+
+    def test_computer_versus_computer_game(self):
+        output = io.StringIO()
+        with patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[0]), patch("tic_tac_toe.get_human_move", side_effect=AssertionError("human prompt")), patch("tic_tac_toe.get_computer_move", wraps=game.get_computer_move) as computer, contextlib.redirect_stdout(output):
+            board, journal, outcome = game.play_game("0")
+        self.assertEqual([entry[0] for entry in journal], ["O" if i % 2 == 0 else "X" for i in range(len(journal))])
+        self.assertEqual(len({entry[1] for entry in journal}), len(journal))
+        self.assertTrue(all(entry[2] in ("center", "block", "random") for entry in journal))
+        self.assertEqual(journal[0], ("O", 5, "center"))
+        self.assertIn(outcome, ("O", "X", "draw"))
+        self.assertIn("Move journal", output.getvalue())
+        self.assertEqual(sum(bool(cell) for cell in board), len(journal))
+        self.assertEqual([call.args[1] for call in computer.call_args_list], ["X" if entry[0] == "O" else "O" for entry in journal])
+
+    def test_computer_game_updates_scores_without_leaderboard_entry(self):
+        output = io.StringIO()
+        with patch("builtins.input", side_effect=["0", "n"]), patch("tic_tac_toe.load_leaderboard", return_value=[]), patch("tic_tac_toe.save_leaderboard") as save, patch("tic_tac_toe.random.choice", side_effect=lambda choices: choices[0]), contextlib.redirect_stdout(output):
+            game.main()
+        save.assert_not_called()
+        self.assertIn("Play again? [Y/n]", output.getvalue())
+        totals = re.findall(r"X Wins: (\d+) \| O Wins: (\d+) \| Draws: (\d+)", output.getvalue())
+        self.assertTrue(totals)
+        self.assertEqual(sum(map(int, totals[-1])), 1)
+        self.assertNotIn("enter initials", output.getvalue())
 
     def test_leaderboard_persistence(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -124,7 +153,7 @@ class TicTacToeTests(unittest.TestCase):
         self.assertIn(" 7 | 8 | 9", output.getvalue())
 
     def test_mode_validation(self):
-        with patch("builtins.input", side_effect=["bad", "3", " 2 "]), patch("builtins.print") as out:
+        with patch("builtins.input", side_effect=["bad", "no", " 2 "]), patch("builtins.print") as out:
             self.assertEqual(game.choose_mode(), "2")
         self.assertEqual(out.call_count, 2)
 

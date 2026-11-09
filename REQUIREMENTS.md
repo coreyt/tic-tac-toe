@@ -2,14 +2,14 @@
 
 ## 1. Purpose
 
-Create a basic text-based tic-tac-toe game supporting either two human players or one human player against the computer.
+Create a basic text-based tic-tac-toe game supporting two human players, one human against the computer, or two computers.
 
 ## 2. Functional requirements
 
 1. The game must run in a terminal using Python.
 2. The game must display a 3-by-3 board with positions numbered 1 through 9.
 3. At the start of each game session, the game must ask whether to play with one player or two players.
-4. The game must accept only `1` or `2` as valid player-mode selections and re-prompt for invalid selections.
+4. The game must accept `0`, `1`, or `2` as valid player-mode selections and re-prompt for invalid selections; the prompt must display only the `1`- and `2`-player options.
 5. In two-player mode, both `O` and `X` must be controlled by human players.
 6. In one-player mode, the human player must choose `X` or `O`; the computer must control the other mark.
 7. The game must clearly identify which mark is controlled by the computer.
@@ -17,7 +17,7 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 9. Player `O` must always take the first turn.
 10. On each human turn, the game must ask the current player to select an available position from 1 through 9.
 11. On each computer turn, the game must select an unoccupied position automatically.
-12. The computer must select moves according to the ordered rules and tie-breaking behavior in `spec-computer-strategy.txt`: first take the center if empty, otherwise block the first immediate human threat, otherwise choose randomly from empty positions.
+12. The computer must select moves according to `spec-computer-strategy.txt`: first take the center if empty, otherwise block the first immediate opponent threat, otherwise choose randomly from empty positions.
 13. The computer must never select an occupied position.
 14. The game must reject non-numeric input and numbers outside the range 1 through 9.
 15. The game must reject positions that have already been selected.
@@ -41,6 +41,10 @@ Create a basic text-based tic-tac-toe game supporting either two human players o
 33. The leaderboard must be displayed at program startup, when the player declines to play again, and when a player enters `l` or `L` at a move prompt during a game; viewing it during a game must return to the same turn without making a move.
 34. The leaderboard must persist in `leaderboard.csv` and be loaded on later program runs. The program must implement CSV reading and writing manually without a CSV library.
 35. Each computer move must be accompanied by its selection reason (`center`, `block`, or `random`), and the move journal must display that reason alongside the computer's mark and position. Human moves must remain identifiable without a computer-selection reason.
+36. **Computer can play computer:** The game must support a computer-versus-computer mode.
+   - 36a. Entering `0` at the player-mode prompt selects this mode, but `0` must not appear as an option in that prompt.
+   - 36b. The computer must control both `O` and `X`, with `O` first. Each side must use the existing computer strategy against the opposing mark; no human mark-selection or move prompt is needed.
+   - 36c. The game must display the board, moves, result, and replay prompt. The result must update the session totals exactly once, but must not add an entry to the human leaderboard or prompt for initials.
 
 ## 3. Non-functional requirements
 
@@ -62,14 +66,14 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given a new game after replay, when the journal is displayed, then it contains no moves from the previous game.
    - Given a game prompt, including the replay prompt, when it is displayed, then two blank lines separate it from the bottom edge of the board.
    - Given the program has started, when it displays the mode prompt, then it offers one-player and two-player modes.
-   - Given a mode is entered, when it is `1` or `2`, then the game accepts it; for any other entry, it displays an error and asks again.
+   - Given a mode is entered, when it is `0`, `1`, or `2`, then the game accepts it; for any other entry, it displays an error and asks again. The prompt displays only `1` and `2` as options.
    - Given a valid mode is selected, when the game begins, then the board is empty and `O` is announced as the first player.
 
 2. **Two-player mode**
    - Given two-player mode is selected, when a turn begins, then both `O` and `X` are prompted for human moves.
    - Given two-player mode, when player 1 selects `X` or `O`, then player 1 receives that mark, player 2 receives the other, and both assignments are identified.
    - Given a valid move is entered, when the move is accepted, then the selected square displays that player’s mark and the turn changes.
-   - Given either player mode, when a valid move is made and the game has not ended, then the next turn belongs to the other mark, alternating between `O` and `X`.
+   - Given any player mode, when a valid move is made and the game has not ended, then the next turn belongs to the other mark, alternating between `O` and `X`.
 
 3. **One-player mode**
    - Given one-player mode, when the human selects `X` or `O`, then the human receives that mark, the computer receives the other, and both assignments are identified.
@@ -92,7 +96,7 @@ The implementation is acceptable when all of the following scenarios pass:
    - Given a game has ended, when the player chooses to play again, then the game asks for the mode again, clears the board, and starts with `O`.
    - Given a game has ended, when the replay prompt is displayed, then it indicates yes is the default; pressing Enter starts another game.
    - Given a game has ended, when the player declines to play again, then the game displays a closing message and exits.
-   - Given any player mode, when a mark is selected using lowercase or uppercase `x` or `o`, then it is accepted; any other entry displays an error and repeats the selection prompt.
+   - Given one-player or two-player mode, when a mark is selected using lowercase or uppercase `x` or `o`, then it is accepted; any other entry displays an error and repeats the selection prompt.
    - Given completed games with wins for `X`, wins for `O`, and draws, when each game ends and a new game begins, then all three displayed totals reflect exactly those results and are retained across mode or mark changes.
    - Given a newly started program, when the session totals are displayed, then `X` wins, `O` wins, and draws each start at zero, regardless of a previous session.
 
@@ -117,3 +121,10 @@ The implementation is acceptable when all of the following scenarios pass:
 10. **Computer move explanations**
    - Given a computer selects the center, blocks an opponent, or chooses randomly, when the move is returned and displayed, then its reason is respectively `center`, `block`, or `random` and appears alongside that move in the journal.
    - Given a human move, when the journal displays it, then it has no computer-selection reason.
+11. **Computer versus computer**
+   - Given the mode prompt, when it is displayed, then it offers `1` and `2` without showing `0`; entering `0` starts computer-versus-computer mode.
+   - Given computer-versus-computer mode, when the game starts, then no mark-selection or human-move prompt appears, and the computer plays `O` first and `X` second.
+   - Given either computer's turn, when it moves, then it applies the existing computer strategy using the other mark as its opponent and selects an empty square.
+   - Given a computer-versus-computer game, when it progresses and ends, then the board and journal show its moves, the final result is displayed, and the replay prompt appears.
+   - Given a computer-versus-computer game ends, when its result is recorded, then the corresponding `X` wins, `O` wins, or draws total increases exactly once; no initials are requested and the human leaderboard is unchanged.
+   - Given replay is selected after a computer-versus-computer game, when a new game begins, then the player can choose any supported mode and the session totals are retained.
